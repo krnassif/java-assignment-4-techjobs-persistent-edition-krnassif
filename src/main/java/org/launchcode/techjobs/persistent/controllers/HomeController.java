@@ -54,13 +54,25 @@ public class HomeController {
 
         if (errors.hasErrors()) {
             model.addAttribute("title", "Add Job");
+            model.addAttribute("employers", employerRepository.findAll());
+            model.addAttribute("skills", skillRepository.findAll());
             return "add";
-        }
 
-        model.addAttribute("employers", employerRepository.findById(employerId));
-        List<Skill> skillObjs = (List<Skill>) skillRepository.findAllById(skills);
-        newJob.setSkills(skillObjs);
-        return "redirect:";
+        } else {
+
+            Optional optEmployer = employerRepository.findById(employerId);
+            if (optEmployer.isPresent()) {
+                Employer employer = (Employer) optEmployer.get();
+                newJob.setEmployer(employer);
+            }
+
+            //added lines 63-66, which allowed add job to work properly. Before, I kept getting a Whitelabel error
+
+            List<Skill> skillObjs = (List<Skill>) skillRepository.findAllById(skills);
+            newJob.setSkills(skillObjs);
+            jobRepository.save(newJob);
+            return "redirect:";
+        }
     }
 
     @GetMapping("view/{jobId}")
